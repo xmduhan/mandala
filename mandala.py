@@ -6,6 +6,8 @@ from termcolor import cprint
 from prompt_toolkit import prompt as _prompt
 from prompt_toolkit.history import InMemoryHistory
 from itertools import count
+from treelib import Tree
+from pandas import DataFrame
 
 history = InMemoryHistory()
 db = dataset.connect('sqlite:///db.sqlite')
@@ -37,14 +39,13 @@ def save(w0, w1):
 
 
 def prompt(text):
-    return _prompt(text, history=history)
+    return _prompt(text, history=history).strip()
 
 
 def hfeed(w0=None):
     """ """
     if w0 is None:
         w0 = prompt(u'关键词:')
-        w0 = w0.strip()
         if len(w0) == 0:
             return
     for i in count(start=1, step=1):
@@ -58,7 +59,6 @@ def vfeed(w0=None):
     """ """
     if w0 is None:
         w0 = prompt(u'关键词:')
-        w0 = w0.strip()
         if len(w0) == 0:
             return
     for i in count(start=1, step=1):
@@ -69,9 +69,45 @@ def vfeed(w0=None):
         w0 = w1
 
 
+def readLevel():
+    while True:
+        levelString = prompt(u'最大递归级数(3):')
+        try:
+            level = int(levelString)
+            return level
+        except Exception:
+            print u'输入有误, 必须是整数!'
+
+
 def lookup():
     """ """
-    pass
+    w0 = prompt(u'关键字:')
+    level = readLevel()
+    qs = db.query('select w0, w1, count(*) n from relation group by w0, w1')
+    df = DataFrame(list(qs))
+    tree = Tree()
+    tree.create_node(w0, w0)
+    appendList = []
+
+    def append(w0, level=5):
+        if w0 in appendList or level == 0:
+            return
+        appendList.append(w0)
+        for i, row in df[df['w0'] == w0].iterrows():
+            w1 = row['w1']
+            n = row['n']
+            # print w0, '-->', w1
+            if w1 not in tree:
+                title = '%s[%d]' % (w1, n)
+                tree.create_node(title, w1, parent=w0)
+            else:
+                # 出现循环
+                title = '%s[%d](*)' % (w1, n)
+                tree.create_node(title, i, parent=w0)
+            append(w1, level - 1)
+
+    append(w0, level)
+    tree.show()
 
 
 def quit():
