@@ -72,6 +72,8 @@ def chain(w0=None):
 def readLevel():
     while True:
         levelString = prompt(u'最大递归级数(3):')
+        if len(levelString) == 0:
+            levelString = 3
         try:
             level = int(levelString)
             return level
