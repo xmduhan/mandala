@@ -42,7 +42,7 @@ def prompt(text):
     return _prompt(text, history=history).strip()
 
 
-def hfeed(w0=None):
+def star(w0=None):
     """ """
     if w0 is None:
         w0 = prompt(u'关键词:')
@@ -55,7 +55,7 @@ def hfeed(w0=None):
         save(w0, w1)
 
 
-def vfeed(w0=None):
+def chain(w0=None):
     """ """
     if w0 is None:
         w0 = prompt(u'关键词:')
@@ -111,18 +111,31 @@ def lookup():
 
 
 def quit():
+    """ """
     print u'再见!'
     db.rollback()
     exit()
 
 
+def help():
+    """ """
+    print u'star: 星型添加'
+    print u'chain: 链式添加'
+    print u'commit: 保存'
+    print u'rollback: 取消'
+    print u'lookup: 查找'
+    print u'quit: 退出'
+    print u'help: 帮助'
+
+
 commands = {
-    'hfeed': hfeed,
-    'vfeed': vfeed,
+    'star': star,
+    'chain': chain,
     'lookup': lookup,
     'commit': commit,
     'rollback': rollback,
     'quit': quit,
+    'help': help,
 }
 
 
